@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: medical-reports-db
+    environment:
+      POSTGRES_USER: medreport
+      POSTGRES_PASSWORD: medreport_dev
+      POSTGRES_DB: medical_reports
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medreport -d medical_reports"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medical-reports-api
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://medreport:medreport_dev@postgres:5432/medical_reports?sslmode=disable
+      SERVER_PORT: 8080
+      SERVER_HOST: 0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medical-reports-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    environment:
+      - VITE_API_URL=http://localhost:8080/api/v1
+
+volumes:
+  postgres_data:
