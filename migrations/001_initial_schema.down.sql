@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS report_versions;
+DROP TABLE IF EXISTS reports;
+DROP TABLE IF EXISTS medications;
+DROP TABLE IF EXISTS icd10_codes;
+DROP EXTENSION IF EXISTS "uuid-ossp";
